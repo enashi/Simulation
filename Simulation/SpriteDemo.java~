@@ -1,0 +1,293 @@
+
+
+import java.awt.Color;
+import java.awt.Composite;
+import java.awt.Font;
+import java.awt.FontMetrics;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.GraphicsConfiguration;
+import java.awt.Image;
+import java.awt.Paint;
+import java.awt.Rectangle;
+import java.awt.RenderingHints;
+import java.awt.Shape;
+import java.awt.Stroke;
+import java.awt.RenderingHints.Key;
+import java.awt.font.FontRenderContext;
+import java.awt.font.GlyphVector;
+import java.awt.geom.AffineTransform;
+import java.awt.image.BufferedImage;
+import java.awt.image.BufferedImageOp;
+import java.awt.image.ImageObserver;
+import java.awt.image.RenderedImage;
+import java.awt.image.renderable.RenderableImage;
+import java.io.File;
+import java.text.AttributedCharacterIterator;
+import java.util.Map;
+
+import javax.imageio.ImageIO;
+import javax.swing.JApplet;
+import javax.swing.JFrame;
+import javax.swing.JPanel;
+
+
+
+public class SpriteDemo extends JPanel {
+
+
+	private JFrame frame;
+	private Graphics2D g2;
+	
+	private Image waterSprite;
+	private Image grassSprite;
+	private Image treeSprite;
+	private Image tree_fire;
+	private Image cendre;
+	private Image poule;
+	
+	private int spriteLength = 32;
+	
+	public static int[][] myWorld;
+	public static int[][] animals;
+	public static int longueur=8;
+	public static int largeur=8;
+
+	public SpriteDemo()
+	{	
+		try
+		{
+			waterSprite = ImageIO.read(new File("water.png"));
+			treeSprite = ImageIO.read(new File("arbre1.png"));
+			grassSprite = ImageIO.read(new File("grass.png"));
+			tree_fire = ImageIO.read(new File("tree_fire.png"));
+			cendre = ImageIO.read(new File("cendre.png"));
+			poule = ImageIO.read(new File("poule.png"));
+		}
+		
+		catch(Exception e)
+		{
+			e.printStackTrace();
+			System.exit(-1);
+		}
+
+		frame = new JFrame("World of Sprite");
+		frame.add(this);
+		frame.setSize(300,300);
+		frame.setVisible(true);
+		
+		myWorld = new int[longueur][largeur];
+		//animals = new int[longueur][largeur];
+		
+		for ( int i = 0 ; i != longueur ; i++ )
+		{
+			for ( int j = 0 ; j != largeur ; j++ )
+			{
+				switch((int)(Math.random()*3.0))
+				{
+					case 0: myWorld[i][j] = 0;
+						break;
+					case 1:	myWorld[i][j] = 1;
+						break;
+					case 2: myWorld[i][j] = 4;
+						break;
+				}
+			}		
+		}	
+				
+	}
+	
+	public JFrame getframe() {
+		return frame;
+	}
+	public Graphics2D getG() {
+		return g2;
+	}
+	
+
+	public void paint(Graphics g)
+	{
+		Graphics2D g2 = (Graphics2D)g;
+		for ( int i = 0 ; i < myWorld.length ; i++ )
+		{
+			for ( int j = 0 ; j < myWorld[0].length ; j++ )
+			{
+				if ( myWorld[i][j] == 0 )
+					g2.drawImage(grassSprite,spriteLength*i,spriteLength*j,spriteLength,spriteLength, frame);
+				else
+					if ( myWorld[i][j] == 1 )
+						g2.drawImage(treeSprite,spriteLength*i,spriteLength*j,spriteLength,spriteLength, frame);
+					else
+						if ( myWorld[i][j] == 2 )	
+							g2.drawImage(tree_fire,spriteLength*i,spriteLength*j,spriteLength,spriteLength, frame);
+						else
+							if ( myWorld[i][j] == 3 )	
+								g2.drawImage(cendre,spriteLength*i,spriteLength*j,spriteLength,spriteLength, frame);
+							else
+								if ( myWorld[i][j] == 4 )	
+									g2.drawImage(waterSprite,spriteLength*i,spriteLength*j,spriteLength,spriteLength, frame);
+								else
+									if ( myWorld[i][j] == 5 )	
+										g2.drawImage(poule,spriteLength*i,spriteLength*j,spriteLength,spriteLength, frame);
+			}
+		}
+		
+	}
+	
+	
+	// grass = 0
+	// tree = 1
+	// bruning tree = 2
+	// cendre = 3
+	// water = 4
+	// poule = 5
+	
+	public static void main(String[] args) 
+	{
+		SpriteDemo s= new SpriteDemo();
+		//System.out.println("");
+		
+		
+		int dx=longueur;
+		int dy=largeur;
+		
+		int[][] tableauCourant = myWorld;
+		int[][] nouveauTableau = new int[dx][dy];
+		
+		int nombreDePasMaximum = 20;
+		int it = 0;
+		int nbIterations = 10;
+		
+		double p1 = 0; // prob qu'un arbre prenne feu
+		double p2 = 0; // prob qu'un arbre apparaisse		
+		
+		int x_hasard=(int)(Math.random()*longueur);
+		int y_hasard=(int)(Math.random()*largeur);
+		
+		while(!(tableauCourant[x_hasard][y_hasard] == 1))
+		{// burning tree
+			x_hasard=(int)(Math.random()*longueur);
+			y_hasard=(int)(Math.random()*largeur);
+		}
+		
+		tableauCourant[x_hasard][y_hasard] = 2;
+		
+		int l=(int)(Math.random()*longueur);
+		int b=(int)(Math.random()*largeur);
+		
+		while(!(tableauCourant[l][b] == 0))
+		{
+			l = (int)(Math.random()*longueur);
+			b = (int)(Math.random()*largeur);
+		}
+		
+		tableauCourant[l][b] = 5;
+
+		
+		while(it < nbIterations)
+		{	
+			try 
+			{
+				Thread.sleep(1000);
+			} 
+		
+			catch (InterruptedException e) 
+			{
+				
+			}
+	
+			//màj de l'automate cellulaire pour feu de forêts
+			for ( int x = 0 ; x != tableauCourant.length ; x++ ) 
+			{
+				for ( int y = 0 ; y != tableauCourant[0].length ; y++ )
+				{	
+					if (( tableauCourant[x][y] == 0) || (tableauCourant[x][y] == 3))
+					{
+						nouveauTableau[x][y] = 0;		
+					}
+					
+					if ( tableauCourant[x][y] == 2) 
+					{
+						nouveauTableau[x][y] = 3;	
+					}
+					
+					else if (tableauCourant[x][y] == 1)
+					{
+						if ((tableauCourant[(x+1)%dx][y] == 2) || (tableauCourant[x][(y+1)%dy] == 2) ||(tableauCourant[(x-1+dx)%dx][y] == 2) || (tableauCourant[x][(y-1+dy)%dy] == 2)) 
+						{
+							 nouveauTableau[x][y] = 2;		 
+						}
+						else 
+						{
+							nouveauTableau[x][y] = 1;	
+						}
+					}
+					
+					if (p2 > Math.random()) 
+					{
+						if ( nouveauTableau[x][y] == 0) 
+						{
+							nouveauTableau[x][y] = 1;			
+						}
+					}
+					
+					if (p1 > Math.random())
+					{
+						if ( nouveauTableau[x][y] == 1) 
+						{
+							nouveauTableau[x][y] = 2;			
+						}
+					}
+					
+					if (tableauCourant[x][y] == 4)
+					{
+						nouveauTableau[x][y] = 4;
+					}
+				}				
+			}
+			
+			for ( int x = 0 ; x != tableauCourant.length ; x++ ) 
+			{
+				for ( int y = 0 ; y != tableauCourant[0].length ; y++ )
+				{	
+					if (tableauCourant[x][( y - 1 + myWorld.length ) % myWorld.length] == 0)
+			        {
+			         	nouveauTableau[x][( y - 1 + myWorld.length ) % myWorld.length] = 5;
+			       	}
+					else
+						if (tableauCourant[( x + 1 + myWorld.length ) % myWorld.length][y] == 0)
+							nouveauTableau[( x + 1 + myWorld.length ) % myWorld.length][y] = 5;
+						else
+							if (tableauCourant[x][( y + 1 + myWorld.length ) % myWorld.length] == 0)
+								nouveauTableau[x][( y + 1 + myWorld.length ) % myWorld.length] = 5;
+							else
+								if (tableauCourant[( x - 1 + myWorld.length ) % myWorld.length][y] == 0)
+									nouveauTableau[( x - 1 + myWorld.length ) % myWorld.length][y] = 5;
+				}				
+			}
+			
+			// 2 - met a jour le tableau affichable
+				
+			for ( int x = 0 ; x != tableauCourant.length ; x++ ) 
+			{
+				for ( int y = 0 ; y != tableauCourant[0].length ; y++ ) 
+				{
+					tableauCourant[x][y] = nouveauTableau[x][y];		
+				}
+			}
+			myWorld=tableauCourant;
+			
+			s.paint(s.getGraphics());
+			it++;
+			
+		}
+		
+	}
+}
+
+
+
+
+
+
+

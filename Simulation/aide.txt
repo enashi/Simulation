@@ -1,0 +1,5 @@
+Le main programme -> dans SpriteDemo.java
+Les variables pouvant être modifié -> dans les constructeurs de SpriteDemo et de World
+Utiliser de nouveaux bruits de Perlin ( plutôt que ceux fournis ) -> dans la classe World -> dans la méthode init_terrain()
+La sélection du bruit de perlin se fait avec un Math.random(), pour charger votre propre bruit (qui doit être sous forme d'un .png ) vous pouvez modifier l'instruction de chargement en ImageIO.read(new File("votre_bruit_de_perlin.png")); après avoir placer votre bruit de perlin dans le dossier avec le programme et le reste des images.
+Modifiez ensuite la variable choix_terrain ( juste au-dessus ) pour qu'elle sélectionne votre bruit de perlin ( par défault elle sélectionne un bruit au hasard parmi tous ).
